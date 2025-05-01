@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etl-job
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: etl
+            image: your-dockerhub/etl-job:latest
+            env:
+            - name: DB_HOST
+              value: "postgres-service"
+            - name: DB_USER
+              value: "user"
+            - name: DB_PASS
+              value: "password"
+            - name: DB_NAME
+              value: "analytics"
+          restartPolicy: OnFailure

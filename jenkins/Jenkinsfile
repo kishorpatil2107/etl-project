@@ -1,0 +1,26 @@
+pipeline {
+  agent any
+  environment {
+    IMAGE = "your-dockerhub/etl-job:latest"
+  }
+  stages {
+    stage('Build Docker Image') {
+      steps {
+        sh 'docker build -t $IMAGE ./etl'
+      }
+    }
+    stage('Push to Registry') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+          sh 'docker push $IMAGE'
+        }
+      }
+    }
+    stage('Deploy to K8s') {
+      steps {
+        sh 'kubectl apply -f k8s/etl-cronjob.yaml'
+      }
+    }
+  }
+}
